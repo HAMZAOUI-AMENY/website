@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9; /* Light background for the page */
+            color: #333;
+        }
+        h1 {
+            color: #004080; /* Updated blue color */
+        }
+        h2 {
+            color: #004080; /* Updated blue color */
+        }
+        div {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff; /* White background for sections */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #004080; /* Updated blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003366; /* Darker blue for hover effect */
+        }
+        input {
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px); /* Full-width input field */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
+        }
+        #operationsList, #searchResult {
+            margin-top: 10px;
+            background-color: #ffffff; /* White background for results */
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            min-height: 50px; /* Minimum height for result containers */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Page</h1>
+    <div>
+        <h2>All Operations</h2>
+        <button id="viewOperationsButton">View Operations</button>
+        <table id="operationsTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Date</th>
+                    <th>Operation Type</th>
+                    <th>Barcode</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="operationsList"></div>
+    </div>
+    <div>
+        <h2>Search by Barcode</h2>
+        <input type="text" id="barcode" placeholder="Enter barcode">
+        <button id="searchButton">Search</button>
+        <div id="searchResult"></div>
+        <table id="searchOperationsTable" style="display:none;">
+            <thead>
+                <tr>
+                    <th>User ID</th>
+                    <th>Date</th>
+                    <th>Operation Type</th>
+                    <th>Barcode</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <button id="logoutButton">Logout</button>
+
+    <script>
+        function logout() {
+            fetch('/logout', {
+                method: 'GET'
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/index.html';
+                } else {
+                    console.error('Logout failed');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function fetchOperations() {
+            fetch('/operations', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                const operationsList = document.getElementById('operationsList');
+                const operationsTable = document.getElementById('operationsTable');
+                const tbody = operationsTable.querySelector('tbody');
+
+                operationsList.innerHTML = '';
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    operationsList.innerHTML = '<p>No operations found.</p>';
+                    operationsTable.style.display = 'none';
+                } else {
+                    operationsTable.style.display = 'table';
+                    data.forEach(operation => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${operation.userId}</td>
+                            <td>${operation.date}</td>
+                            <td>${operation.operationType}</td>
+                            <td>${operation.barcode}</td>
+                            <td>${operation.location}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                }
+            }).catch(error => {
+                console.error('Error fetching operations:', error);
+                document.getElementById('operationsList').innerHTML = '<p>Error fetching operations. Please try again later.</p>';
+                document.getElementById('operationsTable').style.display = 'none';
+            });
+        }
+
+        function searchByBarcode() {
+            const barcode = document.getElementById('barcode').value;
+            fetch(`/operations?barcode=${barcode}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                const searchResult = document.getElementById('searchResult');
+                const searchOperationsTable = document.getElementById('searchOperationsTable');
+                const tbody = searchOperationsTable.querySelector('tbody');
+                searchResult.innerHTML = '';
+                tbody.innerHTML = '';
+
+                if (data.status === 'not_found') {
+                    searchResult.innerHTML = '<p>No operations found for the given barcode.</p>';
+                    searchOperationsTable.style.display = 'none';
+                } else {
+                    searchResult.innerHTML = `
+                        <p>Last operation type: ${data.lastOperationType}</p>
+                        <p>Last location: ${data.lastLocation}</p>
+                    `;
+                    
+                    data.operations.forEach(operation => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${operation.userId}</td>
+                            <td>${operation.date}</td>
+                            <td>${operation.operationType}</td>
+                            <td>${operation.barcode}</td>
+                            <td>${operation.location}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    searchOperationsTable.style.display = 'table';
+                }
+            }).catch(error => {
+                console.error('Error searching by barcode:', error);
+                document.getElementById('searchResult').innerHTML = '<p>Error searching by barcode. Please try again later.</p>';
+                document.getElementById('searchOperationsTable').style.display = 'none';
+            });
+        }
+
+        document.getElementById('viewOperationsButton').addEventListener('click', fetchOperations);
+        document.getElementById('searchButton').addEventListener('click', searchByBarcode);
+        document.getElementById('logoutButton').addEventListener('click', logout);
+    </script>
+</body>
+</html>

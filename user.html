@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9; /* Light background for the page */
+            color: #333;
+        }
+        h1 {
+            color: #004080; /* Updated blue color */
+        }
+        form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff; /* White background for the form */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px); /* Full-width input field */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #004080; /* Updated blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003366; /* Darker blue for hover effect */
+        }
+        #logoutButton {
+            margin-top: 20px;
+        }
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e0f7fa; /* Light blue background for messages */
+            color: #006064; /* Darker blue text color */
+            border: 1px solid #b2ebf2; /* Light blue border */
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Page</h1>
+    <div id="message"></div>
+    <form id="operationForm">
+        <input type="text" id="location" name="location" placeholder="Location" required>
+        <input type="text" id="operationType" name="operationType" placeholder="Operation Type (in/out)" required>
+        <input type="text" id="barcode" name="barcode" placeholder="Barcode" required>
+        <button type="submit">Submit Operation</button>
+    </form>
+    <button id="logoutButton">Logout</button>
+
+    <script>
+        function logout() {
+            fetch('/logout', {
+                method: 'GET'
+            }).then(response => {
+                if (response.ok) {
+                    window.location.href = '/index.html'; // Redirect to login page
+                } else {
+                    console.error('Logout failed');
+                }
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function submitOperation(event) {
+            event.preventDefault();
+            const form = document.getElementById('operationForm');
+            const formData = new FormData(form);
+            const data = new URLSearchParams(formData);
+
+            fetch('/add-operation', {
+                method: 'POST',
+                body: data
+            }).then(response => {
+                return response.text();
+            }).then(text => {
+                const messageDiv = document.getElementById('message');
+                messageDiv.textContent = text;
+                form.reset();
+            }).catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        document.getElementById('logoutButton').addEventListener('click', logout);
+        document.getElementById('operationForm').addEventListener('submit', submitOperation);
+
+        // Handle barcode scanner input
+        document.getElementById('barcode').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                submitOperation(new Event('submit', { cancelable: true, bubbles: true }));
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f6f9; /* Light background for the page */
+            color: #333;
+        }
+        h1 {
+            color: #004080; /* Updated blue color */
+        }
+        form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff; /* White background for the form */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input, select {
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 22px); /* Full-width input field */
+            box-sizing: border-box; /* Include padding and border in element's total width and height */
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #004080; /* Updated blue color */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003366; /* Darker blue for hover effect */
+        }
+        .link {
+            display: block;
+            margin-top: 10px;
+            color: #004080;
+            text-decoration: none;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sign Up</h1>
+    <!--MESSAGE_PLACEHOLDER-->
+    <form action="/signup" method="post">
+        <input type="number" id="matricule" name="matricule" placeholder="Matricule" required>
+        <input type="text" id="nom" name="nom" placeholder="Nom" required>
+        <select id="profil" name="profil" required>
+            <option value="" disabled selected>Select Profil</option>
+            <option value="Admin">admin</option>
+            <option value="user">user</option>
+        </select>
+        <input type="password" id="motdepasse" name="motdepasse" placeholder="Mot de passe" required>
+        <button type="submit">Sign Up</button>
+    </form>
+    <a href="index.html" class="link">Already have an account? Log in</a>
+</body>
+</html>
